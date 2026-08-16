@@ -16,6 +16,8 @@ class PosteController extends Controller
                 'ref' => $this->reference($i),
                 'rotors' => $rotors,
                 'niveau' => $this->niveau($rotors),
+                // Contexte historique révélé à 100 % — jamais le clair.
+                'sens' => config("poste.phrases.$i.sens", ''),
             ];
         }, array_keys(config('poste.phrases')));
 

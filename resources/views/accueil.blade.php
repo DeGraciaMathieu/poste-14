@@ -13,6 +13,29 @@
   }
   .complete.on{display:block}
 
+  /* Récompense du 100 % : grade + archives déclassifiées. */
+  .final{margin-top:14px;animation:finalIn .45s ease-out}
+  .final[hidden]{display:none}
+  @keyframes finalIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
+  .grade{
+    position:relative;overflow:hidden;text-align:center;
+    background:var(--papier);color:var(--encre);border-radius:4px;padding:22px 18px;
+    box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 2px var(--laiton);
+  }
+  .grade .eyb{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:#8A8069}
+  .grade .titre{font-size:22px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin:8px 0 2px}
+  .grade .sous{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8A8069}
+  .grade .sceau{
+    position:absolute;right:12px;bottom:10px;border:3px solid var(--signal);color:var(--signal);
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:2px;
+    transform:rotate(-10deg);opacity:.85;
+  }
+  .archives{margin-top:14px}
+  .archives .titre{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--laiton);margin-bottom:8px}
+  .archive{background:var(--panneau);border:1px solid var(--acier);border-radius:5px;padding:10px 12px;margin-bottom:8px}
+  .archive .msg{font-family:"Courier New",monospace;font-size:13px;font-weight:700;color:var(--papier);word-break:break-word;line-height:1.5}
+  .archive .glose{font-size:11px;color:#9BA08D;line-height:1.55;margin-top:5px}
+
   .reset{
     display:block;margin:18px auto 0;background:none;border:1px dashed var(--acier);
     color:#7E8371;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
@@ -78,6 +101,24 @@
 
 <div class="complete" id="complete">Transmission complète — toutes les interceptions déchiffrées</div>
 
+<section class="final" id="final" hidden>
+  <div class="grade">
+    <div class="eyb">Poste 14 — dossier clos</div>
+    <div class="titre">Cryptanalyste</div>
+    <div class="sous">{{ count($references) }} interceptions déchiffrées</div>
+    <div class="sceau">Homologué</div>
+  </div>
+  <div class="archives">
+    <div class="titre">Archives déclassifiées</div>
+    @foreach ($references as $r)
+      <div class="archive" data-i="{{ $r['index'] }}">
+        <div class="msg"></div>
+        <div class="glose">{{ $r['sens'] }}</div>
+      </div>
+    @endforeach
+  </div>
+</section>
+
 <ul class="liste">
   @foreach ($references as $r)
     <li>
@@ -122,7 +163,15 @@ items.forEach(item => {
 const total = items.length;
 document.getElementById("compteur").textContent = trouvees + " / " + total + " déchiffrées";
 document.getElementById("jauge").style.width = (total ? trouvees / total * 100 : 0) + "%";
-if (total > 0 && trouvees === total) document.getElementById("complete").classList.add("on");
+// Récompense du 100 % : bannière, grade et archives (messages tirés du localStorage).
+if (total > 0 && trouvees === total){
+  document.getElementById("complete").classList.add("on");
+  const final = document.getElementById("final");
+  final.hidden = false;
+  final.querySelectorAll(".archive").forEach(a => {
+    a.querySelector(".msg").textContent = store[a.dataset.i] || "";
+  });
+}
 
 // Réinitialisation : proposée seulement s'il y a une progression à effacer.
 const reset = document.getElementById("reset");
