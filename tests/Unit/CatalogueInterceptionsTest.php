@@ -29,17 +29,30 @@ class CatalogueInterceptionsTest extends TestCase
         }
     }
 
-    public function test_chaque_reglage_est_jouable_sur_trois_rotors(): void
+    public function test_chaque_reglage_tient_sur_trois_a_six_rotors(): void
     {
-        // Trois rotors de 26 positions : une clé hors de 0-25 serait injouable.
+        // Rotors de 26 positions : une clé hors de 0-25 serait injouable, et le
+        // jeu ne gère que 3 à 6 rotors.
         foreach ($this->interceptions() as $interception) {
-            $this->assertCount(3, $interception['cle']);
+            $this->assertGreaterThanOrEqual(3, count($interception['cle']));
+            $this->assertLessThanOrEqual(6, count($interception['cle']));
 
             foreach ($interception['cle'] as $position) {
                 $this->assertGreaterThanOrEqual(0, $position);
                 $this->assertLessThanOrEqual(25, $position);
             }
         }
+    }
+
+    public function test_la_difficulte_augmente_le_long_du_catalogue(): void
+    {
+        // Le nombre de rotors ne doit jamais redescendre : les interceptions sont
+        // ordonnées de la plus facile à la plus dure.
+        $rotors = array_map(fn ($i) => count($i['cle']), $this->interceptions());
+        $croissant = $rotors;
+        sort($croissant);
+
+        $this->assertSame($croissant, $rotors, 'Le catalogue doit aller du plus facile au plus dur.');
     }
 
     public function test_le_mot_indice_apparait_vraiment_dans_le_message(): void

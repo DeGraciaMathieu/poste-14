@@ -10,8 +10,7 @@ class PosteTest extends TestCase
     {
         $reponse = $this->get('/')->assertOk();
 
-        $total = count(config('poste.phrases'));
-        for ($i = 0; $i < $total; $i++) {
+        foreach (array_keys(config('poste.phrases')) as $i) {
             $reponse->assertSee("/interception/{$i}", false);
         }
     }
@@ -27,18 +26,19 @@ class PosteTest extends TestCase
 
     public function test_chaque_interception_est_resoluble_sans_exposer_son_clair(): void
     {
-        foreach (array_keys(config('poste.phrases')) as $i) {
+        foreach (config('poste.phrases') as $i => $interception) {
             $reponse = $this->get("/interception/{$i}")->assertOk();
 
             // Le clair de l'interception ne doit jamais figurer dans la page.
-            $reponse->assertDontSee(config("poste.phrases.$i.texte"));
+            $reponse->assertDontSee($interception['texte']);
 
-            // Le chiffré envoyé doit avoir une solution qui déclenche la victoire.
+            // Avec le bon réglage des rotors, le chiffré donne un clair lisible
+            // dont l'empreinte déclenche la victoire.
             [$cipher, $hash] = $this->cipherEtHash($reponse->getContent());
-            $this->assertNotNull(
-                $this->reglageQuiResout($cipher, $hash),
-                "L'interception {$i} n'est pas résoluble."
-            );
+            $clair = $this->tourneLesRotors($cipher, $interception['cle']);
+
+            $this->assertSame($interception['texte'], $clair, "L'interception {$i} n'est pas résoluble.");
+            $this->assertSame($hash, hash('sha256', $clair));
         }
     }
 
@@ -55,24 +55,38 @@ class PosteTest extends TestCase
         $this->assertSame($premier, $second);
     }
 
-    public function test_l_indice_revele_une_position_de_rotor_reellement_gagnante(): void
+    public function test_un_niveau_facile_offre_les_aides(): void
     {
-        [$cipher, $hash] = $this->cipherEtHash($this->get('/interception/0')->getContent());
+        $reponse = $this->get('/interception/0')->assertOk()->assertSee('Demander un indice');
 
+        [$cipher, $hash] = $this->cipherEtHash($reponse->getContent());
         $indice = $this->getJson('/interception/0/indice')->assertOk()->json();
 
         $this->assertSame(0, $indice['index']);
-        $this->assertGreaterThanOrEqual(0, $indice['pos']);
-        $this->assertLessThanOrEqual(25, $indice['pos']);
 
-        // En calant le rotor I sur l'indice, le reste doit rester résoluble.
-        $this->assertNotNull(
-            $this->reglageQuiResout($cipher, $hash, $indice['pos']),
-            "L'indice ne mène pas à une solution valide."
-        );
+        // L'indice cale le rotor I sur une position réellement gagnante : avec ce
+        // réglage et le reste de la clé, le chiffré se résout.
+        $reglage = config('poste.phrases.0.cle');
+        $reglage[$indice['index']] = $indice['pos'];
+        $this->assertSame($hash, hash('sha256', $this->tourneLesRotors($cipher, $reglage)));
     }
 
-    // ---- oracles indépendants : ce que fait un joueur, pas ce que fait le code ----
+    public function test_un_niveau_difficile_n_offre_aucune_aide(): void
+    {
+        $difficile = count(config('poste.phrases')) - 1;
+        $interception = config("poste.phrases.$difficile");
+
+        $reponse = $this->get("/interception/{$difficile}")->assertOk();
+
+        // Ni bouton d'indice, ni mot du clair livré au joueur.
+        $reponse->assertDontSee('Demander un indice');
+        $reponse->assertDontSee($interception['motCle']);
+
+        // L'indice de rotor reste fermé même en appelant l'URL en direct.
+        $this->get("/interception/{$difficile}/indice")->assertNotFound();
+    }
+
+    // ---- oracle indépendant : ce que fait un joueur, pas ce que fait le code ----
 
     private function cipherEtHash(string $page): array
     {
@@ -82,27 +96,12 @@ class PosteTest extends TestCase
         return [$c[1], $h[1]];
     }
 
-    private function reglageQuiResout(string $cipher, string $hash, ?int $rotorI = null): ?array
-    {
-        for ($a = $rotorI ?? 0; $a <= ($rotorI ?? 25); $a++) {
-            for ($b = 0; $b < 26; $b++) {
-                for ($c = 0; $c < 26; $c++) {
-                    if (hash('sha256', $this->tourneLesRotors($cipher, [$a, $b, $c])) === $hash) {
-                        return [$a, $b, $c];
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
     private function tourneLesRotors(string $txt, array $cle): string
     {
         $i = 0;
 
         return preg_replace_callback('/[A-Z]/', function ($m) use ($cle, &$i) {
-            $d = -$cle[$i % 3];
+            $d = -$cle[$i % count($cle)];
             $i++;
 
             return chr(((ord($m[0]) - 65 + $d) % 26 + 26) % 26 + 65);
