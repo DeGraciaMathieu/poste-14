@@ -13,6 +13,13 @@
   }
   .complete.on{display:block}
 
+  .reset{
+    display:block;margin:18px auto 0;background:none;border:1px dashed var(--acier);
+    color:#7E8371;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    padding:8px 14px;border-radius:3px;cursor:pointer;
+  }
+  .reset[hidden]{display:none}
+
   .liste{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
   .item{
     position:relative;overflow:hidden;display:block;
@@ -88,6 +95,8 @@
     </li>
   @endforeach
 </ul>
+
+<button class="reset" id="reset" hidden>Réinitialiser la progression</button>
 @endsection
 
 @push('scripts')
@@ -114,5 +123,16 @@ const total = items.length;
 document.getElementById("compteur").textContent = trouvees + " / " + total + " déchiffrées";
 document.getElementById("jauge").style.width = (total ? trouvees / total * 100 : 0) + "%";
 if (total > 0 && trouvees === total) document.getElementById("complete").classList.add("on");
+
+// Réinitialisation : proposée seulement s'il y a une progression à effacer.
+const reset = document.getElementById("reset");
+if (trouvees > 0){
+  reset.hidden = false;
+  reset.onclick = () => {
+    if (!confirm("Effacer toutes les interceptions déchiffrées ?")) return;
+    Object.keys(localStorage).filter(k => k.startsWith("poste14:")).forEach(k => localStorage.removeItem(k));
+    location.reload();
+  };
+}
 </script>
 @endpush
