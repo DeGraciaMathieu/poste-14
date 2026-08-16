@@ -120,7 +120,7 @@
   <button class="indice" id="indice">Demander un indice</button>
 </div>
 @endif
-<div class="note" id="note">Tourne les rotors jusqu'à ce que la sortie devienne lisible. (Maintiens un bouton, ou flèches ↑↓.)</div>
+<div class="note" id="note"></div>
 <a class="cta" id="cta" href="/" hidden>Retour aux interceptions ›</a>
 @endsection
 
