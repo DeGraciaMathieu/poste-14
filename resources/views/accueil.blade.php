@@ -43,6 +43,16 @@
   .grade .eyb{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#8A8069}
   .grade .titre{font-size:26px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin:6px 0 0}
   .grade .rule{width:56px;height:2px;background:var(--laiton);margin:10px auto}
+  .grade .attribue{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8A8069;margin-top:2px}
+  /* Ligne de signature : purement visuelle, le nom n'est ni enregistré ni envoyé. */
+  .grade .nom{
+    display:block;width:80%;max-width:260px;margin:6px auto 4px;padding:4px 2px;
+    background:transparent;border:none;border-bottom:1px solid rgba(43,40,34,.5);
+    text-align:center;color:var(--encre);font-family:"Georgia","Times New Roman",serif;font-style:italic;font-size:18px;
+    outline:none;
+  }
+  .grade .nom::placeholder{color:rgba(43,40,34,.35);font-style:italic}
+  .grade .nom:focus{border-bottom-color:var(--laiton)}
   .grade .sous{font-size:11px;letter-spacing:.06em;color:#6B6552;line-height:1.7}
   .grade .signature{margin-top:12px;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8A8069}
   .grade .sceau{
@@ -121,7 +131,9 @@
     <div class="eyb">Certificat d'aptitude</div>
     <div class="titre">Cryptanalyste</div>
     <div class="rule"></div>
-    <div class="sous">décerné pour le déchiffrement<br>des {{ count($references) }} interceptions du Poste 14</div>
+    <div class="attribue">Décerné à</div>
+    <input class="nom" type="text" maxlength="28" placeholder="votre nom" aria-label="Votre nom">
+    <div class="sous">pour le déchiffrement des<br>{{ count($references) }} interceptions du Poste 14</div>
     <div class="signature">Station d'écoute — dossier clos</div>
     <div class="sceau">Homologué</div>
   </div>
