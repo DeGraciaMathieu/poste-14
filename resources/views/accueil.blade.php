@@ -18,24 +18,38 @@
   .final[hidden]{display:none}
   @keyframes finalIn{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
   .grade{
-    position:relative;overflow:hidden;text-align:center;
-    background:var(--papier);color:var(--encre);border-radius:4px;padding:22px 18px;
-    box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 2px var(--laiton);
+    position:relative;overflow:hidden;text-align:center;color:var(--encre);border-radius:4px;padding:26px 20px 24px;
+    background:radial-gradient(circle at 50% 0%, rgba(196,146,46,.12), transparent 62%), var(--papier);
+    box-shadow:
+      0 8px 0 rgba(0,0,0,.35),
+      inset 0 0 0 1px rgba(0,0,0,.2),
+      inset 0 0 0 6px var(--papier),
+      inset 0 0 0 7px rgba(196,146,46,.55),
+      0 0 0 2px var(--laiton);
   }
-  .grade .eyb{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:#8A8069}
-  .grade .titre{font-size:22px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin:8px 0 2px}
-  .grade .sous{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8A8069}
+  /* Reflet doré qui balaie le certificat à l'apparition. */
+  .grade::after{
+    content:"";position:absolute;top:0;left:-60%;width:50%;height:100%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);
+    transform:skewX(-18deg);animation:gleam 1.1s ease-out .25s both;
+  }
+  @keyframes gleam{0%{left:-60%}100%{left:130%}}
+  .grade .medaille{
+    width:38px;height:38px;margin:0 auto 10px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--papier);
+    background:radial-gradient(circle at 35% 30%, #E7BC5C, var(--laiton));
+    box-shadow:0 0 0 2px var(--papier), 0 0 0 3px var(--laiton);
+  }
+  .grade .eyb{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#8A8069}
+  .grade .titre{font-size:26px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin:6px 0 0}
+  .grade .rule{width:56px;height:2px;background:var(--laiton);margin:10px auto}
+  .grade .sous{font-size:11px;letter-spacing:.06em;color:#6B6552;line-height:1.7}
+  .grade .signature{margin-top:12px;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8A8069}
   .grade .sceau{
     position:absolute;right:12px;bottom:10px;border:3px solid var(--signal);color:var(--signal);
     font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:2px;
-    transform:rotate(-10deg);opacity:.85;
+    transform:rotate(-10deg);opacity:.9;
   }
-  .archives{margin-top:14px}
-  .archives .titre{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--laiton);margin-bottom:8px}
-  .archive{background:var(--panneau);border:1px solid var(--acier);border-radius:5px;padding:10px 12px;margin-bottom:8px}
-  .archive .msg{font-family:"Courier New",monospace;font-size:13px;font-weight:700;color:var(--papier);word-break:break-word;line-height:1.5}
-  .archive .glose{font-size:11px;color:#9BA08D;line-height:1.55;margin-top:5px}
-
   .reset{
     display:block;margin:18px auto 0;background:none;border:1px dashed var(--acier);
     color:#7E8371;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
@@ -85,7 +99,7 @@
   .item.fraiche .tampon-liste{animation:tamponIn .5s cubic-bezier(.2,1.3,.4,1) both}
 
   @media (prefers-reduced-motion:reduce){
-    .item.fraiche,.item.fraiche .tampon-liste{animation:none}
+    .item.fraiche,.item.fraiche .tampon-liste,.final,.grade::after{animation:none}
     .progression > i{transition:none}
   }
 </style>
@@ -103,19 +117,13 @@
 
 <section class="final" id="final" hidden>
   <div class="grade">
-    <div class="eyb">Poste 14 — dossier clos</div>
+    <div class="medaille">✶</div>
+    <div class="eyb">Certificat d'aptitude</div>
     <div class="titre">Cryptanalyste</div>
-    <div class="sous">{{ count($references) }} interceptions déchiffrées</div>
+    <div class="rule"></div>
+    <div class="sous">décerné pour le déchiffrement<br>des {{ count($references) }} interceptions du Poste 14</div>
+    <div class="signature">Station d'écoute — dossier clos</div>
     <div class="sceau">Homologué</div>
-  </div>
-  <div class="archives">
-    <div class="titre">Archives déclassifiées</div>
-    @foreach ($references as $r)
-      <div class="archive" data-i="{{ $r['index'] }}">
-        <div class="msg"></div>
-        <div class="glose">{{ $r['sens'] }}</div>
-      </div>
-    @endforeach
   </div>
 </section>
 
@@ -166,11 +174,7 @@ document.getElementById("jauge").style.width = (total ? trouvees / total * 100 :
 // Récompense du 100 % : bannière, grade et archives (messages tirés du localStorage).
 if (total > 0 && trouvees === total){
   document.getElementById("complete").classList.add("on");
-  const final = document.getElementById("final");
-  final.hidden = false;
-  final.querySelectorAll(".archive").forEach(a => {
-    a.querySelector(".msg").textContent = store[a.dataset.i] || "";
-  });
+  document.getElementById("final").hidden = false;
 }
 
 // Réinitialisation : proposée seulement s'il y a une progression à effacer.
