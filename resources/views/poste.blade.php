@@ -137,6 +137,8 @@ function enregistre(message){
   if (store[INDEX] === message) return;
   store[INDEX] = message;
   localStorage.setItem("poste14:decouvertes", JSON.stringify(store));
+  // Signale à l'accueil la découverte fraîche, pour la mettre en avant.
+  localStorage.setItem("poste14:dernier", String(INDEX));
 }
 
 const rotors = document.getElementById("rotors");

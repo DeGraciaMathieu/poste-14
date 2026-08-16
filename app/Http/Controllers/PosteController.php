@@ -6,12 +6,18 @@ class PosteController extends Controller
 {
     public function index()
     {
-        // La liste ne porte que des références : le clair reste secret et n'est
-        // révélé que côté client, depuis le localStorage, une fois déchiffré.
-        $references = array_map(
-            fn ($i) => ['index' => $i, 'ref' => $this->reference($i)],
-            array_keys(config('poste.phrases'))
-        );
+        // La liste ne porte que des références et le niveau de difficulté : le clair
+        // reste secret et n'est révélé que côté client, depuis le localStorage.
+        $references = array_map(function ($i) {
+            $rotors = count(config("poste.phrases.$i.cle"));
+
+            return [
+                'index' => $i,
+                'ref' => $this->reference($i),
+                'rotors' => $rotors,
+                'niveau' => $this->niveau($rotors),
+            ];
+        }, array_keys(config('poste.phrases')));
 
         return view('accueil', ['references' => $references]);
     }
@@ -68,6 +74,17 @@ class PosteController extends Controller
     private function reference(int $i): string
     {
         return sprintf('Interception n°%02d', $i + 1);
+    }
+
+    // Niveau lisible, aligné sur le nombre de rotors (rang de 1 à 4 pour l'affichage).
+    private function niveau(int $rotors): array
+    {
+        return match (true) {
+            $rotors <= 3 => ['label' => 'Facile', 'rang' => 1],
+            $rotors === 4 => ['label' => 'Moyen', 'rang' => 2],
+            $rotors === 5 => ['label' => 'Difficile', 'rang' => 3],
+            default => ['label' => 'Expert', 'rang' => 4],
+        };
     }
 
     private function transforme(string $txt, array $cle, int $sens): string
