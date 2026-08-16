@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Station d'écoute — Poste 14</title>
+<style>
+  :root{
+    --bakelite:#24261F;
+    --panneau:#33372E;
+    --acier:#585D50;
+    --papier:#E9E2CE;
+    --encre:#2B2822;
+    --laiton:#C4922E;
+    --signal:#A8342A;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;background:var(--bakelite);color:var(--papier);
+    font-family:"Helvetica Neue",Arial,sans-serif;
+    min-height:100vh;padding:14px 12px 40px;
+    background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 4px);
+  }
+  header{border-bottom:2px solid var(--acier);padding-bottom:8px;margin-bottom:16px}
+  .eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--laiton)}
+  h1{font-size:15px;letter-spacing:.16em;text-transform:uppercase;margin:4px 0 0;font-weight:600}
+  .meta{font-size:10px;letter-spacing:.14em;color:#8B9080;margin-top:3px}
+
+  .bande{
+    background:var(--papier);color:var(--encre);border-radius:2px;
+    padding:12px 12px 14px;position:relative;overflow:hidden;
+    box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.18);
+  }
+  .bande::before,.bande::after{
+    content:"";position:absolute;top:0;bottom:0;width:11px;
+    background-image:radial-gradient(circle at 5.5px 6px,var(--bakelite) 2.4px,transparent 2.6px);
+    background-size:11px 12px;
+  }
+  .bande::before{left:0}.bande::after{right:0}
+  .bande .inner{padding:0 14px}
+  .label{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#8A8069;margin-bottom:4px}
+  .chiffre{
+    font-family:"Courier New",monospace;font-size:12px;letter-spacing:.14em;
+    color:#9A9078;word-break:break-word;line-height:1.7;margin-bottom:12px;
+  }
+  .clair{
+    font-family:"Courier New",monospace;font-size:16px;font-weight:700;
+    letter-spacing:.1em;line-height:1.75;word-break:break-word;min-height:3.5em;
+  }
+  .clair b{background:rgba(196,146,46,.32);font-weight:700}
+
+  .tampon{
+    position:absolute;right:16px;bottom:8px;border:3px solid var(--signal);
+    color:var(--signal);font-size:15px;letter-spacing:.2em;padding:4px 10px;
+    transform:rotate(-9deg) scale(2.4);opacity:0;transition:transform .28s cubic-bezier(.2,1.3,.4,1),opacity .18s;
+    font-weight:700;pointer-events:none;
+  }
+  .gagne .tampon{opacity:.85;transform:rotate(-9deg) scale(1)}
+
+  .rotors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+  .rotor{
+    background:linear-gradient(180deg,var(--panneau),#2A2D26);
+    border:1px solid var(--acier);border-radius:5px;padding:8px 6px;text-align:center;
+  }
+  .rotor .nom{font-size:9px;letter-spacing:.2em;color:var(--laiton);margin-bottom:6px}
+  .tambour{
+    background:#15170F;border:1px solid #0B0C08;border-radius:3px;padding:6px 0;
+    box-shadow:inset 0 6px 10px rgba(0,0,0,.7);
+  }
+  .lettre{font-family:"Courier New",monospace;font-size:30px;font-weight:700;color:#E5D9B4;line-height:1}
+  .num{font-size:9px;color:#7E8371;letter-spacing:.12em;margin-top:2px}
+  .cran{display:flex;gap:6px;margin-top:8px}
+  .cran button{
+    flex:1;background:var(--acier);border:none;color:var(--papier);font-size:16px;
+    padding:9px 0;border-radius:3px;cursor:pointer;border-bottom:2px solid #3B4036;
+  }
+  .cran button:active{transform:translateY(1px);border-bottom-width:1px}
+  .cran button:focus-visible{outline:2px solid var(--laiton);outline-offset:2px}
+
+  .bas{margin-top:18px;display:flex;gap:8px;align-items:center}
+  .indice{
+    flex:1;background:none;border:1px dashed var(--acier);color:#9BA08D;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:10px;border-radius:3px;cursor:pointer;
+  }
+  .note{font-size:11px;color:#9BA08D;line-height:1.6;margin-top:12px;min-height:2.4em}
+  .note em{color:var(--laiton);font-style:normal}
+  @media (prefers-reduced-motion:reduce){.tampon{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Interception 04:12</div>
+  <h1>Station d'écoute — poste 14</h1>
+  <div class="meta">Trois rotors · réglage inconnu · une seule bande</div>
+</header>
+
+<div class="bande" id="bande">
+  <div class="inner">
+    <div class="label">Signal capté</div>
+    <div class="chiffre" id="chiffre"></div>
+    <div class="label">Sortie déchiffrée</div>
+    <div class="clair" id="clair"></div>
+  </div>
+  <div class="tampon">EN CLAIR</div>
+</div>
+
+<div class="rotors" id="rotors"></div>
+
+<div class="bas">
+  <button class="indice" id="indice">Demander un indice</button>
+</div>
+<div class="note" id="note">Tourne les rotors jusqu'à ce que la sortie devienne lisible.</div>
+
+<script>
+const A = 65;
+const PLAIN = "LE CONVOI QUITTE LE PORT A LAUBE ESCORTE PAR DEUX DESTROYERS";
+const CLE = [7, 19, 4];
+const NOMS = ["Rotor I", "Rotor II", "Rotor III"];
+let pos = [0, 0, 0];
+let indices = 0;
+
+function transforme(txt, cle, sens){
+  let i = 0;
+  return txt.replace(/[A-Z]/g, c => {
+    const d = cle[i % 3] * sens;
+    i++;
+    return String.fromCharCode(((c.charCodeAt(0) - A + d) % 26 + 26) % 26 + A);
+  });
+}
+
+const CIPHER = transforme(PLAIN, CLE, 1);
+document.getElementById("chiffre").textContent = CIPHER;
+
+const rotors = document.getElementById("rotors");
+NOMS.forEach((nom, i) => {
+  const el = document.createElement("div");
+  el.className = "rotor";
+  el.innerHTML = `
+    <div class="nom">${nom}</div>
+    <div class="tambour"><div class="lettre" id="l${i}">A</div><div class="num" id="n${i}">00</div></div>
+    <div class="cran">
+      <button aria-label="${nom} moins">−</button>
+      <button aria-label="${nom} plus">+</button>
+    </div>`;
+  const [moins, plus] = el.querySelectorAll("button");
+  moins.onclick = () => tourne(i, -1);
+  plus.onclick = () => tourne(i, 1);
+  rotors.appendChild(el);
+});
+
+function tourne(i, d){
+  pos[i] = (pos[i] + d + 26) % 26;
+  rendu();
+}
+
+function rendu(){
+  pos.forEach((p, i) => {
+    document.getElementById("l" + i).textContent = String.fromCharCode(A + p);
+    document.getElementById("n" + i).textContent = String(p).padStart(2, "0");
+  });
+  const sortie = transforme(CIPHER, pos, -1);
+  const clair = document.getElementById("clair");
+  clair.innerHTML = sortie.replace(/CONVOI/g, "<b>CONVOI</b>");
+  document.getElementById("bande").classList.toggle("gagne", sortie === PLAIN);
+}
+
+document.getElementById("indice").onclick = function(){
+  const note = document.getElementById("note");
+  indices++;
+  if (indices === 1){
+    note.innerHTML = "<em>Indice 1.</em> Le mot CONVOI apparaît dans le message. Il est surligné dès qu'il sort.";
+  } else if (indices === 2){
+    note.innerHTML = "<em>Indice 2.</em> Le rotor I est calé sur H. Les deux autres restent à trouver.";
+    pos[0] = CLE[0]; rendu();
+  } else {
+    note.innerHTML = "<em>Plus d'indice.</em> Un seul mot juste suffit : cale-le, les deux autres rotors suivent.";
+    this.disabled = true; this.style.opacity = .4;
+  }
+};
+
+rendu();
+</script>
+</body>
+</html>
