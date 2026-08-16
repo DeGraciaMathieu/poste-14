@@ -62,4 +62,21 @@ class CatalogueInterceptionsTest extends TestCase
             $this->assertStringContainsString($interception['motCle'], $interception['texte']);
         }
     }
+
+    public function test_chaque_interception_porte_un_sens_historique(): void
+    {
+        // Les archives déclassifiées ont besoin d'un contexte pour chaque message.
+        foreach ($this->interceptions() as $interception) {
+            $this->assertArrayHasKey('sens', $interception);
+            $this->assertNotEmpty($interception['sens']);
+        }
+    }
+
+    public function test_le_sens_ne_divulgue_jamais_le_clair(): void
+    {
+        // Le contexte des archives ne doit jamais contenir le message en clair.
+        foreach ($this->interceptions() as $interception) {
+            $this->assertStringNotContainsStringIgnoringCase($interception['texte'], $interception['sens']);
+        }
+    }
 }

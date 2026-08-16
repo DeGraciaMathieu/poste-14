@@ -42,7 +42,9 @@ class PosteTest extends TestCase
         $this->get('/')->assertOk()
             ->assertSee('Déchiffrée')                    // tampon posé sur une interception résolue
             ->assertSee('Transmission complète')         // bannière de complétion totale
-            ->assertSee('Réinitialiser la progression'); // contrôle de remise à zéro
+            ->assertSee('Réinitialiser la progression')  // contrôle de remise à zéro
+            ->assertSee('Cryptanalyste')                 // grade décerné au 100 %
+            ->assertSee('Archives déclassifiées');       // panneau du contexte historique
     }
 
     public function test_le_puzzle_offre_un_retour_a_la_victoire(): void
