@@ -35,7 +35,8 @@
   }
   .gagne .tampon{opacity:.85;transform:rotate(-9deg) scale(1)}
 
-  .rotors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+  /* La grille s'enroule : 3 rotors tiennent sur une ligne étroite, 6 débordent sur deux. */
+  .rotors{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px;margin-top:20px}
   .rotor{
     background:linear-gradient(180deg,var(--panneau),#2A2D26);
     border:1px solid var(--acier);border-radius:5px;padding:8px 6px;text-align:center;
@@ -75,7 +76,7 @@
 <header>
   <div class="eyebrow"><a href="/">‹ Interceptions</a></div>
   <h1>{{ $ref }}</h1>
-  <div class="meta">Trois rotors · réglage inconnu · une seule bande</div>
+  <div class="meta">{{ $rotors }} rotors · réglage inconnu · une seule bande</div>
 </header>
 
 <div class="bande" id="bande">
@@ -90,9 +91,11 @@
 
 <div class="rotors" id="rotors"></div>
 
+@if ($motDonne || $indiceRotor)
 <div class="bas">
   <button class="indice" id="indice">Demander un indice</button>
 </div>
+@endif
 <div class="note" id="note">Tourne les rotors jusqu'à ce que la sortie devienne lisible.</div>
 @endsection
 
@@ -102,11 +105,16 @@ const A = 65;
 // Le chiffré vient du serveur ; le clair et la clé n'y sont jamais.
 const CIPHER = @json($cipher);
 const PLAIN_HASH = @json($plainHash);
-const MOT = @json($motCle);
-const MOT_RE = new RegExp(MOT, "g");
 const INDEX = @json($index);
-const NOMS = ["Rotor I", "Rotor II", "Rotor III"];
-let pos = [0, 0, 0];
+const ROTORS = @json($rotors);
+const MOT = @json($motCle);            // '' quand le mot n'est pas donné
+const MOT_DONNE = @json($motDonne);
+const INDICE_ROTOR = @json($indiceRotor);
+const MOT_RE = MOT ? new RegExp(MOT, "g") : null;
+
+const ROMAINS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+const NOMS = Array.from({length: ROTORS}, (_, i) => "Rotor " + ROMAINS[i]);
+let pos = new Array(ROTORS).fill(0);
 let indices = 0;
 
 function transforme(txt, cle, sens){
@@ -161,7 +169,9 @@ function rendu(){
     document.getElementById("n" + i).textContent = String(p).padStart(2, "0");
   });
   const sortie = transforme(CIPHER, pos, -1);
-  document.getElementById("clair").innerHTML = sortie.replace(MOT_RE, m => `<b>${m}</b>`);
+  const clair = document.getElementById("clair");
+  if (MOT_DONNE && MOT_RE) clair.innerHTML = sortie.replace(MOT_RE, m => `<b>${m}</b>`);
+  else clair.textContent = sortie;
 
   // Victoire détectée en local via l'empreinte, sans exposer le clair.
   const mine = ++seq;
@@ -173,22 +183,32 @@ function rendu(){
   });
 }
 
-document.getElementById("indice").onclick = function(){
-  const note = document.getElementById("note");
-  indices++;
-  if (indices === 1){
-    note.innerHTML = `<em>Indice 1.</em> Le mot ${MOT} apparaît dans le message. Il est surligné dès qu'il sort.`;
-  } else if (indices === 2){
-    fetch(`/interception/${INDEX}/indice`).then(r => r.json()).then(d => {
-      pos[d.index] = d.pos;
-      note.innerHTML = `<em>Indice 2.</em> Le rotor I est calé sur ${String.fromCharCode(A + d.pos)}. Les deux autres restent à trouver.`;
-      rendu();
-    });
-  } else {
-    note.innerHTML = "<em>Plus d'indice.</em> Un seul mot juste suffit : cale-le, les deux autres rotors suivent.";
-    this.disabled = true; this.style.opacity = .4;
-  }
-};
+const btnIndice = document.getElementById("indice");
+if (btnIndice){
+  const etapes = [];
+  if (MOT_DONNE) etapes.push("mot");
+  if (INDICE_ROTOR) etapes.push("rotor");
+
+  btnIndice.onclick = function(){
+    const note = document.getElementById("note");
+    const etape = etapes[indices];
+    indices++;
+
+    if (etape === "mot"){
+      note.innerHTML = `<em>Indice.</em> Le mot ${MOT} apparaît dans le message. Il est surligné dès qu'il sort.`;
+    } else if (etape === "rotor"){
+      fetch(`/interception/${INDEX}/indice`).then(r => r.json()).then(d => {
+        pos[d.index] = d.pos;
+        note.innerHTML = `<em>Indice.</em> Le rotor I est calé sur ${String.fromCharCode(A + d.pos)}. Les autres restent à trouver.`;
+        rendu();
+      });
+    }
+
+    if (indices >= etapes.length){
+      this.disabled = true; this.style.opacity = .4;
+    }
+  };
+}
 
 rendu();
 </script>

@@ -19,16 +19,22 @@ class PosteController extends Controller
     public function show(int $interception)
     {
         $entree = $this->interception($interception);
+        $aides = $this->aides($entree['cle']);
 
         return view('poste', [
             'index' => $interception,
             'ref' => $this->reference($interception),
+            'rotors' => count($entree['cle']),
             // Le chiffré est destiné à être affiché (« Signal capté »).
             'cipher' => $this->transforme($entree['texte'], $entree['cle'], 1),
             // Le clair n'est jamais envoyé : seule son empreinte permet au client
             // de détecter la victoire en local, sans latence.
             'plainHash' => hash('sha256', $entree['texte']),
-            'motCle' => $entree['motCle'],
+            // Le mot n'est livré que si l'aide est active : sinon on trahirait un
+            // mot du clair sur un niveau censé n'offrir aucune aide.
+            'motDonne' => $aides['mot'],
+            'motCle' => $aides['mot'] ? $entree['motCle'] : '',
+            'indiceRotor' => $aides['rotor'],
         ]);
     }
 
@@ -36,8 +42,22 @@ class PosteController extends Controller
     {
         $entree = $this->interception($interception);
 
-        // Indice 2 : révèle la position d'un seul rotor, jamais la clé entière.
+        // Pas d'indice de rotor sur les niveaux durs, même en appelant l'URL en direct.
+        abort_unless($this->aides($entree['cle'])['rotor'], 404);
+
+        // Indice : révèle la position d'un seul rotor, jamais la clé entière.
         return response()->json(['index' => 0, 'pos' => $entree['cle'][0] ?? 0]);
+    }
+
+    // La difficulté monte avec le nombre de rotors, et les aides s'estompent.
+    private function aides(array $cle): array
+    {
+        $rotors = count($cle);
+
+        return [
+            'mot' => $rotors <= 4,
+            'rotor' => $rotors <= 3,
+        ];
     }
 
     private function interception(int $i): array
