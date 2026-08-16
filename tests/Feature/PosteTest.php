@@ -24,6 +24,26 @@ class PosteTest extends TestCase
         }
     }
 
+    public function test_l_accueil_affiche_le_niveau_de_difficulte(): void
+    {
+        $reponse = $this->get('/')->assertOk();
+
+        // Les niveaux (déduits du nombre de rotors) sont visibles.
+        $reponse->assertSee('Facile')->assertSee('Expert');
+
+        // Le nombre de rotors de chaque interception est indiqué.
+        foreach (config('poste.phrases') as $interception) {
+            $reponse->assertSee(count($interception['cle']).' rotors');
+        }
+    }
+
+    public function test_l_accueil_previsualise_la_recompense_de_completion(): void
+    {
+        $this->get('/')->assertOk()
+            ->assertSee('Déchiffrée')             // tampon posé sur une interception résolue
+            ->assertSee('Transmission complète'); // bannière de complétion totale
+    }
+
     public function test_chaque_interception_est_resoluble_sans_exposer_son_clair(): void
     {
         foreach (config('poste.phrases') as $i => $interception) {
