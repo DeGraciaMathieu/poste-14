@@ -35,8 +35,8 @@
   }
   .gagne .tampon{opacity:.85;transform:rotate(-9deg) scale(1)}
 
-  /* La grille s'enroule : 3 rotors tiennent sur une ligne étroite, 6 débordent sur deux. */
-  .rotors{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:10px;margin-top:20px}
+  /* 3 rotors par ligne maximum, pour la lisibilité : 4 passent sur 3+1, 6 sur 3+3. */
+  .rotors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
   .rotor{
     background:linear-gradient(180deg,var(--panneau),#2A2D26);
     border:1px solid var(--acier);border-radius:5px;padding:8px 6px;text-align:center;
