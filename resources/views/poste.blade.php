@@ -135,6 +135,8 @@ const A = 65;
 // Le chiffré vient du serveur ; le clair et la clé n'y sont jamais.
 const CIPHER = @json($cipher);
 const PLAIN_HASH = @json($plainHash);
+const MOT = @json($motCle);
+const MOT_RE = new RegExp(MOT, "g");
 const NOMS = ["Rotor I", "Rotor II", "Rotor III"];
 let pos = [0, 0, 0];
 let indices = 0;
@@ -183,7 +185,7 @@ function rendu(){
     document.getElementById("n" + i).textContent = String(p).padStart(2, "0");
   });
   const sortie = transforme(CIPHER, pos, -1);
-  document.getElementById("clair").innerHTML = sortie.replace(/CONVOI/g, "<b>CONVOI</b>");
+  document.getElementById("clair").innerHTML = sortie.replace(MOT_RE, m => `<b>${m}</b>`);
 
   // Victoire détectée en local via l'empreinte, sans exposer le clair.
   const mine = ++seq;
@@ -197,10 +199,13 @@ document.getElementById("indice").onclick = function(){
   const note = document.getElementById("note");
   indices++;
   if (indices === 1){
-    note.innerHTML = "<em>Indice 1.</em> Le mot CONVOI apparaît dans le message. Il est surligné dès qu'il sort.";
+    note.innerHTML = `<em>Indice 1.</em> Le mot ${MOT} apparaît dans le message. Il est surligné dès qu'il sort.`;
   } else if (indices === 2){
-    note.innerHTML = "<em>Indice 2.</em> Le rotor I est calé sur H. Les deux autres restent à trouver.";
-    fetch("/indice").then(r => r.json()).then(d => { pos[d.index] = d.pos; rendu(); });
+    fetch("/indice").then(r => r.json()).then(d => {
+      pos[d.index] = d.pos;
+      note.innerHTML = `<em>Indice 2.</em> Le rotor I est calé sur ${String.fromCharCode(A + d.pos)}. Les deux autres restent à trouver.`;
+      rendu();
+    });
   } else {
     note.innerHTML = "<em>Plus d'indice.</em> Un seul mot juste suffit : cale-le, les deux autres rotors suivent.";
     this.disabled = true; this.style.opacity = .4;
