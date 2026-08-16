@@ -271,9 +271,9 @@ function gagner(sortie, silencieux){
 
   enregistre(sortie);
 
-  // Origine du message, récupérée du serveur au moment de la résolution.
-  fetch(`/interception/${INDEX}/origine`).then(r => r.json()).then(d => {
-    if (!d.sens) return;
+  // Origine du message : le serveur ne la livre que sur preuve du réglage gagnant.
+  fetch(`/interception/${INDEX}/origine?cle=${pos.join(",")}`).then(r => r.ok ? r.json() : null).then(d => {
+    if (!d || !d.sens) return;
     document.getElementById("origine-txt").textContent = d.sens;
     document.getElementById("origine").hidden = false;
   });

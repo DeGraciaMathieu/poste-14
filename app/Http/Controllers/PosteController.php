@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+
 class PosteController extends Controller
 {
     public function index()
@@ -55,11 +57,22 @@ class PosteController extends Controller
         return response()->json(['index' => 0, 'pos' => $entree['cle'][0] ?? 0]);
     }
 
-    // Origine historique du message, servie à la résolution (hors du source de la page,
-    // car elle pourrait trahir la réponse pour une citation connue).
-    public function origine(int $interception)
+    // Origine historique du message. Comme elle peut trahir la réponse pour une
+    // citation connue, elle n'est livrée que sur preuve du réglage gagnant : le
+    // client doit fournir une clé qui déchiffre réellement le message. Impossible
+    // donc de s'en servir pour tricher sans déjà détenir la solution.
+    public function origine(int $interception, Request $request)
     {
-        return response()->json(['sens' => $this->interception($interception)['sens'] ?? '']);
+        $entree = $this->interception($interception);
+
+        $pos = array_map('intval', array_filter(explode(',', (string) $request->query('cle', '')), fn ($v) => $v !== ''));
+
+        abort_unless(count($pos) === count($entree['cle']), 403);
+
+        $clair = $this->transforme($this->transforme($entree['texte'], $entree['cle'], 1), $pos, -1);
+        abort_unless($clair === $entree['texte'], 403);
+
+        return response()->json(['sens' => $entree['sens'] ?? '']);
     }
 
     // La difficulté monte avec le nombre de rotors, et les aides s'estompent.

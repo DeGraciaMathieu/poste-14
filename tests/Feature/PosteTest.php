@@ -43,15 +43,24 @@ class PosteTest extends TestCase
             ->assertSee('Déchiffrée')                    // tampon posé sur une interception résolue
             ->assertSee('Transmission complète')         // bannière de complétion totale
             ->assertSee('Réinitialiser la progression')  // contrôle de remise à zéro
-            ->assertSee('Cryptanalyste');                // grade décerné au 100 %
+            ->assertSee('Cryptanalyste')                 // grade décerné au 100 %
+            ->assertSee('Décerné à');                    // ligne de nom sur le certificat
     }
 
-    public function test_l_origine_du_message_est_servie_a_la_resolution(): void
+    public function test_l_origine_n_est_servie_que_sur_preuve_du_reglage_gagnant(): void
     {
-        $origine = $this->getJson('/interception/0/origine')->assertOk()->json();
+        $cle = implode(',', config('poste.phrases.0.cle'));
+
+        // Avec le bon réglage : l'origine est livrée.
+        $origine = $this->getJson("/interception/0/origine?cle={$cle}")->assertOk()->json();
         $this->assertNotEmpty($origine['sens']);
 
-        $this->getJson('/interception/999/origine')->assertNotFound();
+        // Sans preuve, ou avec un mauvais réglage : refusé (pas de triche possible).
+        $this->getJson('/interception/0/origine')->assertForbidden();
+        $this->getJson('/interception/0/origine?cle=0,0,0')->assertForbidden();
+
+        // Interception inexistante : 404.
+        $this->getJson("/interception/999/origine?cle={$cle}")->assertNotFound();
     }
 
     public function test_le_puzzle_ne_devoile_pas_l_origine_dans_le_source(): void
