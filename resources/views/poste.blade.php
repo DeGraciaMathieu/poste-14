@@ -1,31 +1,9 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Station d'écoute — Poste 14</title>
-<style>
-  :root{
-    --bakelite:#24261F;
-    --panneau:#33372E;
-    --acier:#585D50;
-    --papier:#E9E2CE;
-    --encre:#2B2822;
-    --laiton:#C4922E;
-    --signal:#A8342A;
-  }
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  body{
-    margin:0;background:var(--bakelite);color:var(--papier);
-    font-family:"Helvetica Neue",Arial,sans-serif;
-    min-height:100vh;padding:14px 12px 40px;
-    background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 4px);
-  }
-  header{border-bottom:2px solid var(--acier);padding-bottom:8px;margin-bottom:16px}
-  .eyebrow{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--laiton)}
-  h1{font-size:15px;letter-spacing:.16em;text-transform:uppercase;margin:4px 0 0;font-weight:600}
-  .meta{font-size:10px;letter-spacing:.14em;color:#8B9080;margin-top:3px}
+@extends('layout')
 
+@section('title', $ref.' — Poste 14')
+
+@push('styles')
+<style>
   .bande{
     background:var(--papier);color:var(--encre);border-radius:2px;
     padding:12px 12px 14px;position:relative;overflow:hidden;
@@ -85,30 +63,18 @@
   .note{font-size:11px;color:#9BA08D;line-height:1.6;margin-top:12px;min-height:2.4em}
   .note em{color:var(--laiton);font-style:normal}
 
-  .poste{max-width:520px;margin:0 auto}
   @media (min-width:640px){
-    body{
-      padding:48px 20px 64px;
-      display:flex;justify-content:center;align-items:flex-start;
-    }
-    .poste{
-      background:linear-gradient(180deg,var(--panneau),#2A2D26);
-      padding:30px 34px 36px;border-radius:10px;
-      border:1px solid var(--acier);
-      box-shadow:0 22px 55px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
-    }
-    h1{font-size:17px}
     .clair{font-size:18px}
     .lettre{font-size:34px}
   }
   @media (prefers-reduced-motion:reduce){.tampon{transition:none}}
 </style>
-</head>
-<body>
-<main class="poste">
+@endpush
+
+@section('content')
 <header>
-  <div class="eyebrow">Interception 04:12</div>
-  <h1>Station d'écoute — poste 14</h1>
+  <div class="eyebrow"><a href="/">‹ Interceptions</a></div>
+  <h1>{{ $ref }}</h1>
   <div class="meta">Trois rotors · réglage inconnu · une seule bande</div>
 </header>
 
@@ -128,8 +94,9 @@
   <button class="indice" id="indice">Demander un indice</button>
 </div>
 <div class="note" id="note">Tourne les rotors jusqu'à ce que la sortie devienne lisible.</div>
-</main>
+@endsection
 
+@push('scripts')
 <script>
 const A = 65;
 // Le chiffré vient du serveur ; le clair et la clé n'y sont jamais.
@@ -137,6 +104,7 @@ const CIPHER = @json($cipher);
 const PLAIN_HASH = @json($plainHash);
 const MOT = @json($motCle);
 const MOT_RE = new RegExp(MOT, "g");
+const INDEX = @json($index);
 const NOMS = ["Rotor I", "Rotor II", "Rotor III"];
 let pos = [0, 0, 0];
 let indices = 0;
@@ -153,6 +121,14 @@ function transforme(txt, cle, sens){
 async function sha256(str){
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Mémorise le message déchiffré pour le retrouver sur la page d'accueil.
+function enregistre(message){
+  const store = JSON.parse(localStorage.getItem("poste14:decouvertes") || "{}");
+  if (store[INDEX] === message) return;
+  store[INDEX] = message;
+  localStorage.setItem("poste14:decouvertes", JSON.stringify(store));
 }
 
 const rotors = document.getElementById("rotors");
@@ -191,7 +167,9 @@ function rendu(){
   const mine = ++seq;
   sha256(sortie).then(h => {
     if (mine !== seq) return;
-    document.getElementById("bande").classList.toggle("gagne", h === PLAIN_HASH);
+    const gagne = h === PLAIN_HASH;
+    document.getElementById("bande").classList.toggle("gagne", gagne);
+    if (gagne) enregistre(sortie);
   });
 }
 
@@ -201,7 +179,7 @@ document.getElementById("indice").onclick = function(){
   if (indices === 1){
     note.innerHTML = `<em>Indice 1.</em> Le mot ${MOT} apparaît dans le message. Il est surligné dès qu'il sort.`;
   } else if (indices === 2){
-    fetch("/indice").then(r => r.json()).then(d => {
+    fetch(`/interception/${INDEX}/indice`).then(r => r.json()).then(d => {
       pos[d.index] = d.pos;
       note.innerHTML = `<em>Indice 2.</em> Le rotor I est calé sur ${String.fromCharCode(A + d.pos)}. Les deux autres restent à trouver.`;
       rendu();
@@ -214,5 +192,4 @@ document.getElementById("indice").onclick = function(){
 
 rendu();
 </script>
-</body>
-</html>
+@endpush

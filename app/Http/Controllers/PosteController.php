@@ -2,39 +2,52 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-
 class PosteController extends Controller
 {
     public function index()
     {
-        $entree = $this->phraseDuJour();
+        // La liste ne porte que des références : le clair reste secret et n'est
+        // révélé que côté client, depuis le localStorage, une fois déchiffré.
+        $references = array_map(
+            fn ($i) => ['index' => $i, 'ref' => $this->reference($i)],
+            array_keys(config('poste.phrases'))
+        );
+
+        return view('accueil', ['references' => $references]);
+    }
+
+    public function show(int $interception)
+    {
+        $entree = $this->interception($interception);
 
         return view('poste', [
+            'index' => $interception,
+            'ref' => $this->reference($interception),
             // Le chiffré est destiné à être affiché (« Signal capté »).
             'cipher' => $this->transforme($entree['texte'], $entree['cle'], 1),
-            // Le clair n'est jamais envoyé : seul son empreinte permet au client
+            // Le clair n'est jamais envoyé : seule son empreinte permet au client
             // de détecter la victoire en local, sans latence.
             'plainHash' => hash('sha256', $entree['texte']),
             'motCle' => $entree['motCle'],
         ]);
     }
 
-    public function hint()
+    public function hint(int $interception)
     {
-        $entree = $this->phraseDuJour();
+        $entree = $this->interception($interception);
 
         // Indice 2 : révèle la position d'un seul rotor, jamais la clé entière.
         return response()->json(['index' => 0, 'pos' => $entree['cle'][0] ?? 0]);
     }
 
-    // Interception du jour, identique pour tous les joueurs, rotation à minuit.
-    private function phraseDuJour(): array
+    private function interception(int $i): array
     {
-        $phrases = config('poste.phrases');
-        $jours = Carbon::parse(config('poste.depuis'))->startOfDay()->diffInDays(Carbon::now()->startOfDay());
+        return config("poste.phrases.$i") ?? abort(404);
+    }
 
-        return $phrases[$jours % count($phrases)];
+    private function reference(int $i): string
+    {
+        return sprintf('Interception n°%02d', $i + 1);
     }
 
     private function transforme(string $txt, array $cle, int $sens): string

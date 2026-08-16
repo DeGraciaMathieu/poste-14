@@ -2,12 +2,9 @@
 
 return [
 
-    // Point de départ de la rotation quotidienne.
-    'depuis' => '2026-01-01',
-
-    // Une interception par jour. Chaque entrée : le clair, le réglage gagnant des
-    // rotors et le mot surligné/donné en indice. Ces données restent côté serveur ;
-    // seul le chiffré du jour est envoyé au navigateur.
+    // Catalogue des interceptions à découvrir. Chaque entrée : le clair, le réglage
+    // gagnant des rotors et le mot surligné/donné en indice. Ces données restent
+    // côté serveur ; seul le chiffré est envoyé au navigateur.
     'phrases' => [
         ['texte' => 'LE CONVOI QUITTE LE PORT A LAUBE ESCORTE PAR DEUX DESTROYERS', 'cle' => [7, 19, 4], 'motCle' => 'CONVOI'],
         ['texte' => 'LA FLOTTE ENNEMIE APPAREILLE VERS LE NORD AVANT MINUIT', 'cle' => [3, 11, 20], 'motCle' => 'FLOTTE'],
