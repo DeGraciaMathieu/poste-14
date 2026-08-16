@@ -16,8 +16,6 @@ class PosteController extends Controller
                 'ref' => $this->reference($i),
                 'rotors' => $rotors,
                 'niveau' => $this->niveau($rotors),
-                // Contexte historique révélé à 100 % — jamais le clair.
-                'sens' => config("poste.phrases.$i.sens", ''),
             ];
         }, array_keys(config('poste.phrases')));
 
@@ -55,6 +53,13 @@ class PosteController extends Controller
 
         // Indice : révèle la position d'un seul rotor, jamais la clé entière.
         return response()->json(['index' => 0, 'pos' => $entree['cle'][0] ?? 0]);
+    }
+
+    // Origine historique du message, servie à la résolution (hors du source de la page,
+    // car elle pourrait trahir la réponse pour une citation connue).
+    public function origine(int $interception)
+    {
+        return response()->json(['sens' => $this->interception($interception)['sens'] ?? '']);
     }
 
     // La difficulté monte avec le nombre de rotors, et les aides s'estompent.

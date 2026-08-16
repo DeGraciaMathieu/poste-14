@@ -27,6 +27,16 @@
   }
   .clair b{background:rgba(196,146,46,.32);font-weight:700}
 
+  /* Origine historique, révélée à la résolution. */
+  .origine{
+    background:var(--panneau);border:1px solid var(--acier);border-left:3px solid var(--laiton);
+    border-radius:4px;padding:10px 12px;margin-top:12px;font-size:11px;line-height:1.55;color:#C9CBBF;
+    animation:origineIn .35s ease-out;
+  }
+  .origine[hidden]{display:none}
+  .origine b{display:block;color:var(--laiton);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px}
+  @keyframes origineIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+
   .tampon{
     position:absolute;right:16px;bottom:8px;border:3px solid var(--signal);
     color:var(--signal);font-size:15px;letter-spacing:.2em;padding:4px 10px;
@@ -91,7 +101,7 @@
   }
   @media (prefers-reduced-motion:reduce){
     .tampon{transition:none}
-    .lettre.flick,.bande.eclat,.cta{animation:none}
+    .lettre.flick,.bande.eclat,.cta,.origine{animation:none}
   }
 </style>
 @endpush
@@ -112,6 +122,8 @@
   </div>
   <div class="tampon">EN CLAIR</div>
 </div>
+
+<div class="origine" id="origine" hidden><b>Origine du message</b><span id="origine-txt"></span></div>
 
 <div class="rotors" id="rotors"></div>
 
@@ -258,6 +270,13 @@ function gagner(sortie, silencieux){
   document.getElementById("cta").hidden = false;
 
   enregistre(sortie);
+
+  // Origine du message, récupérée du serveur au moment de la résolution.
+  fetch(`/interception/${INDEX}/origine`).then(r => r.json()).then(d => {
+    if (!d.sens) return;
+    document.getElementById("origine-txt").textContent = d.sens;
+    document.getElementById("origine").hidden = false;
+  });
 
   if (!silencieux){
     bande.classList.add("eclat");
