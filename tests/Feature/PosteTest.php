@@ -43,8 +43,22 @@ class PosteTest extends TestCase
             ->assertSee('Déchiffrée')                    // tampon posé sur une interception résolue
             ->assertSee('Transmission complète')         // bannière de complétion totale
             ->assertSee('Réinitialiser la progression')  // contrôle de remise à zéro
-            ->assertSee('Cryptanalyste')                 // grade décerné au 100 %
-            ->assertSee('Archives déclassifiées');       // panneau du contexte historique
+            ->assertSee('Cryptanalyste');                // grade décerné au 100 %
+    }
+
+    public function test_l_origine_du_message_est_servie_a_la_resolution(): void
+    {
+        $origine = $this->getJson('/interception/0/origine')->assertOk()->json();
+        $this->assertNotEmpty($origine['sens']);
+
+        $this->getJson('/interception/999/origine')->assertNotFound();
+    }
+
+    public function test_le_puzzle_ne_devoile_pas_l_origine_dans_le_source(): void
+    {
+        // L'origine n'arrive qu'à la résolution, jamais dans le source de la page.
+        $this->get('/interception/0')->assertOk()
+            ->assertDontSee(config('poste.phrases.0.sens'));
     }
 
     public function test_le_puzzle_offre_un_retour_a_la_victoire(): void
