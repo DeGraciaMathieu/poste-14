@@ -40,8 +40,14 @@ class PosteTest extends TestCase
     public function test_l_accueil_previsualise_la_recompense_de_completion(): void
     {
         $this->get('/')->assertOk()
-            ->assertSee('Déchiffrée')             // tampon posé sur une interception résolue
-            ->assertSee('Transmission complète'); // bannière de complétion totale
+            ->assertSee('Déchiffrée')                    // tampon posé sur une interception résolue
+            ->assertSee('Transmission complète')         // bannière de complétion totale
+            ->assertSee('Réinitialiser la progression'); // contrôle de remise à zéro
+    }
+
+    public function test_le_puzzle_offre_un_retour_a_la_victoire(): void
+    {
+        $this->get('/interception/0')->assertOk()->assertSee('Retour aux interceptions');
     }
 
     public function test_chaque_interception_est_resoluble_sans_exposer_son_clair(): void
