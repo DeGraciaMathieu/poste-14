@@ -115,7 +115,7 @@
 <div class="bande" id="bande">
   <div class="inner">
     <div class="label">Signal capté</div>
-    <div class="chiffre" id="chiffre"></div>
+    <div class="chiffre" id="chiffre">{{ $cipher }}</div>
     <div class="label">Sortie déchiffrée</div>
     <div class="clair" id="clair"></div>
   </div>
@@ -132,8 +132,9 @@
 
 <script>
 const A = 65;
-const PLAIN = "LE CONVOI QUITTE LE PORT A LAUBE ESCORTE PAR DEUX DESTROYERS";
-const CLE = [7, 19, 4];
+// Le chiffré vient du serveur ; le clair et la clé n'y sont jamais.
+const CIPHER = @json($cipher);
+const PLAIN_HASH = @json($plainHash);
 const NOMS = ["Rotor I", "Rotor II", "Rotor III"];
 let pos = [0, 0, 0];
 let indices = 0;
@@ -141,14 +142,16 @@ let indices = 0;
 function transforme(txt, cle, sens){
   let i = 0;
   return txt.replace(/[A-Z]/g, c => {
-    const d = cle[i % 3] * sens;
+    const d = cle[i % cle.length] * sens;
     i++;
     return String.fromCharCode(((c.charCodeAt(0) - A + d) % 26 + 26) % 26 + A);
   });
 }
 
-const CIPHER = transforme(PLAIN, CLE, 1);
-document.getElementById("chiffre").textContent = CIPHER;
+async function sha256(str){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
 
 const rotors = document.getElementById("rotors");
 NOMS.forEach((nom, i) => {
@@ -172,15 +175,22 @@ function tourne(i, d){
   rendu();
 }
 
+let seq = 0;
 function rendu(){
+  // Déchiffrement local : instantané, aucune requête pendant qu'on tourne.
   pos.forEach((p, i) => {
     document.getElementById("l" + i).textContent = String.fromCharCode(A + p);
     document.getElementById("n" + i).textContent = String(p).padStart(2, "0");
   });
   const sortie = transforme(CIPHER, pos, -1);
-  const clair = document.getElementById("clair");
-  clair.innerHTML = sortie.replace(/CONVOI/g, "<b>CONVOI</b>");
-  document.getElementById("bande").classList.toggle("gagne", sortie === PLAIN);
+  document.getElementById("clair").innerHTML = sortie.replace(/CONVOI/g, "<b>CONVOI</b>");
+
+  // Victoire détectée en local via l'empreinte, sans exposer le clair.
+  const mine = ++seq;
+  sha256(sortie).then(h => {
+    if (mine !== seq) return;
+    document.getElementById("bande").classList.toggle("gagne", h === PLAIN_HASH);
+  });
 }
 
 document.getElementById("indice").onclick = function(){
@@ -190,7 +200,7 @@ document.getElementById("indice").onclick = function(){
     note.innerHTML = "<em>Indice 1.</em> Le mot CONVOI apparaît dans le message. Il est surligné dès qu'il sort.";
   } else if (indices === 2){
     note.innerHTML = "<em>Indice 2.</em> Le rotor I est calé sur H. Les deux autres restent à trouver.";
-    pos[0] = CLE[0]; rendu();
+    fetch("/indice").then(r => r.json()).then(d => { pos[d.index] = d.pos; rendu(); });
   } else {
     note.innerHTML = "<em>Plus d'indice.</em> Un seul mot juste suffit : cale-le, les deux autres rotors suivent.";
     this.disabled = true; this.style.opacity = .4;
