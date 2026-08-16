@@ -10,16 +10,16 @@ return [
     // chiffré est envoyé au navigateur.
     'phrases' => [
         // 3 rotors — mot surligné + indice de rotor.
-        ['texte' => 'LE CONVOI QUITTE LE PORT A LAUBE ESCORTE PAR DEUX DESTROYERS', 'cle' => [7, 19, 4], 'motCle' => 'CONVOI'],
-        ['texte' => 'LA FLOTTE ENNEMIE APPAREILLE VERS LE NORD AVANT MINUIT', 'cle' => [3, 11, 20], 'motCle' => 'FLOTTE'],
+        ['texte' => 'LES CAROTTES SONT CUITES', 'cle' => [7, 19, 4], 'motCle' => 'CAROTTES'],
+        ['texte' => 'JEAN A DE LONGUES MOUSTACHES', 'cle' => [3, 11, 20], 'motCle' => 'MOUSTACHES'],
         // 4 rotors — mot surligné, plus d'indice de rotor.
-        ['texte' => 'TROIS SOUS MARINS PATROUILLENT AU LARGE DU CAP GRIS NEZ DEPUIS LAUBE', 'cle' => [14, 2, 9, 21], 'motCle' => 'MARINS'],
-        ['texte' => 'LE GENERAL INSPECTE LES DEFENSES DE LA COTE DEMAIN MATIN A LA PREMIERE HEURE', 'cle' => [5, 22, 8, 1], 'motCle' => 'GENERAL'],
+        ['texte' => 'LES SANGLOTS LONGS DES VIOLONS DE LAUTOMNE', 'cle' => [14, 2, 9, 21], 'motCle' => 'VIOLONS'],
+        ['texte' => 'ICI LONDRES LES FRANCAIS PARLENT AUX FRANCAIS', 'cle' => [5, 22, 8, 1], 'motCle' => 'LONDRES'],
         // 5 rotors — aucune aide.
-        ['texte' => 'MUNITIONS STOCKEES DANS LE HANGAR SEPT PRES DE LA GARE DE TRIAGE SOUS BONNE GARDE', 'cle' => [12, 1, 17, 6, 23], 'motCle' => 'HANGAR'],
-        ['texte' => 'LES RENFORTS ARRIVENT PAR LE TRAIN DE HUIT HEURES QUATORZE VOIE NUMERO TROIS', 'cle' => [9, 15, 3, 20, 11], 'motCle' => 'RENFORTS'],
+        ['texte' => 'LA FRANCE A PERDU UNE BATAILLE MAIS ELLE NA PAS PERDU LA GUERRE', 'cle' => [12, 1, 17, 6, 23], 'motCle' => 'BATAILLE'],
+        ['texte' => 'QUOI QUIL ARRIVE LA FLAMME DE LA RESISTANCE NE DOIT PAS SETEINDRE ET NE SETEINDRA PAS', 'cle' => [9, 15, 3, 20, 11], 'motCle' => 'RESISTANCE'],
         // 6 rotors — aucune aide.
-        ['texte' => 'ORDRE DE REPLI IMMEDIAT SUR LA POSITION DE SECOURS AVANT QUE LE PONT NE SAUTE A MINUIT', 'cle' => [21, 6, 13, 2, 18, 4], 'motCle' => 'REPLI'],
+        ['texte' => 'LES SANGLOTS LONGS DES VIOLONS DE LAUTOMNE BLESSENT MON COEUR DUNE LANGUEUR MONOTONE', 'cle' => [21, 6, 13, 2, 18, 4], 'motCle' => 'LANGUEUR'],
     ],
 
 ];
