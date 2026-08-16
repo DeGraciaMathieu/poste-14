@@ -84,10 +84,28 @@
   }
   .note{font-size:11px;color:#9BA08D;line-height:1.6;margin-top:12px;min-height:2.4em}
   .note em{color:var(--laiton);font-style:normal}
+
+  .poste{max-width:520px;margin:0 auto}
+  @media (min-width:640px){
+    body{
+      padding:48px 20px 64px;
+      display:flex;justify-content:center;align-items:flex-start;
+    }
+    .poste{
+      background:linear-gradient(180deg,var(--panneau),#2A2D26);
+      padding:30px 34px 36px;border-radius:10px;
+      border:1px solid var(--acier);
+      box-shadow:0 22px 55px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+    h1{font-size:17px}
+    .clair{font-size:18px}
+    .lettre{font-size:34px}
+  }
   @media (prefers-reduced-motion:reduce){.tampon{transition:none}}
 </style>
 </head>
 <body>
+<main class="poste">
 <header>
   <div class="eyebrow">Interception 04:12</div>
   <h1>Station d'écoute — poste 14</h1>
@@ -110,6 +128,7 @@
   <button class="indice" id="indice">Demander un indice</button>
 </div>
 <div class="note" id="note">Tourne les rotors jusqu'à ce que la sortie devienne lisible.</div>
+</main>
 
 <script>
 const A = 65;
