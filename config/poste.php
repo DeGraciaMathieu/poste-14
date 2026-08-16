@@ -15,7 +15,7 @@ return [
         ['texte' => 'LES CAROTTES SONT CUITES', 'cle' => [7, 19, 4], 'motCle' => 'CAROTTES', 'sens' => "Formule devenue légendaire de Radio Londres, signalant qu'une opération clandestine était accomplie."],
         ['texte' => 'JEAN A DE LONGUES MOUSTACHES', 'cle' => [3, 11, 20], 'motCle' => 'MOUSTACHES', 'sens' => "Message personnel authentique de la BBC, déclenchant une action précise de la Résistance."],
         // 4 rotors — mot surligné, plus d'indice de rotor.
-        ['texte' => 'LES SANGLOTS LONGS DES VIOLONS DE LAUTOMNE', 'cle' => [14, 2, 9, 21], 'motCle' => 'VIOLONS', 'sens' => "Premier vers de « Chanson d'automne » de Verlaine : il prévenait la Résistance que le Débarquement approchait."],
+        ['texte' => 'ANDROMAQUE SE PARFUME A LA BERGAMOTE', 'cle' => [14, 2, 9, 21], 'motCle' => 'BERGAMOTE', 'sens' => "Message personnel de Radio Londres, à la poésie volontairement absurde pour tromper les écoutes ennemies."],
         ['texte' => 'ICI LONDRES LES FRANCAIS PARLENT AUX FRANCAIS', 'cle' => [5, 22, 8, 1], 'motCle' => 'LONDRES', 'sens' => "Indicatif d'ouverture des émissions françaises de la BBC, écoutées clandestinement sous l'Occupation."],
         // 5 rotors — aucune aide.
         ['texte' => 'LA FRANCE A PERDU UNE BATAILLE MAIS ELLE NA PAS PERDU LA GUERRE', 'cle' => [12, 1, 17, 6, 23], 'motCle' => 'BATAILLE', 'sens' => "Extrait de l'affiche « À tous les Français » placardée à Londres en août 1940."],
